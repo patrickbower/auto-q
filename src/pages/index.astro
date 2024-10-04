@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import AddText from '../components/AddText.astro';
 import ReadText from '../components/ReadText.jsx';
+import Reader from '../components/Reader.astro';
 import { messageOpen } from "../store.js";
 ---
 
@@ -9,10 +10,13 @@ import { messageOpen } from "../store.js";
 	<main>
     <div class="container mx-auto">
       <div class="row mt-5">
-        <h1 class="block tracking-wide text-white font-bold text-4xl my-16">AutoQ</h1>
+        <h1 class="block tracking-wide text-gray-600 font-bold text-4xl my-16">AutoQ</h1>
       </div>
-		  <AddText />
-      <ReadText client:load />
+		  <!-- <AddText />
+      <ReadText client:load /> -->
+
+      <Reader />
+
     </div>
 	</main>
 </Layout>
