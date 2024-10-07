@@ -1,21 +1,17 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import AddText from '../components/AddText.astro';
-import ReadText from '../components/ReadText.jsx';
-import { messageOpen } from "../store.js";
+import Layout from "../layouts/Layout.astro";
+import TextContainer from "../components/TextContainer.jsx";
 ---
 
 <Layout title="AutoQ">
-	<main>
+  <main>
     <div class="container mx-auto">
       <div class="row mt-5">
-        <h1 class="block tracking-wide text-gray-600 font-bold text-4xl my-16">AutoQ</h1>
+        <h1 class="block tracking-wide text-gray-600 font-bold text-4xl my-16">
+          AutoQ
+        </h1>
       </div>
-		  <AddText />
-      <ReadText client:load />
+      <TextContainer client:load />
     </div>
-	</main>
+  </main>
 </Layout>
-
-<style>
-</style>
