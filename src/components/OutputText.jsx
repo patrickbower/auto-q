@@ -42,23 +42,30 @@ const RealTimeAutocue = () => {
     }
 
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      clearTimeout(recognitionTimeoutRef.current);
+      cleanupRecognition();
     };
   }, []);
 
-  // New useEffect to check for last word highlight
   useEffect(() => {
     if (currentWordIndex >= words.length - 1) {
       highlightWord(words.length - 1);
       setTimeout(() => {
-        recognitionRef.current.stop();
-        setIsRecognitionActive(false);
+        stopRecognition();
       }, 500);
     }
   }, [currentWordIndex, words.length]);
+
+  const cleanupRecognition = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current.onresult = null;
+      recognitionRef.current.onsoundstart = null;
+      recognitionRef.current.onsoundend = null;
+      recognitionRef.current.onend = null;
+    }
+    clearTimeout(recognitionTimeoutRef.current);
+    setIsRecognitionActive(false);
+  };
 
   const setupRecognitionEventListeners = () => {
     const recognition = recognitionRef.current;
@@ -66,7 +73,13 @@ const RealTimeAutocue = () => {
     recognition.onresult = handleRecognitionResult;
     recognition.onsoundstart = () => console.log("Sound started");
     recognition.onsoundend = handleSoundEnd;
-    recognition.onend = () => console.log("Recognition ended");
+    recognition.onend = handleRecognitionEnd;
+  };
+
+  const handleRecognitionEnd = () => {
+    console.log("Recognition ended");
+    setIsRecognitionActive(false);
+    // Perform any necessary cleanup here
   };
 
   const levenshteinDistance = (a, b) => {
@@ -161,9 +174,7 @@ const RealTimeAutocue = () => {
 
   const handleSoundEnd = () => {
     console.log("Sound ended");
-    const recognition = recognitionRef.current;
-    recognition.stop();
-    // recognition.start(); // Restart to continue listening
+    stopRecognition();
   };
 
   const startRecognition = () => {
@@ -173,19 +184,33 @@ const RealTimeAutocue = () => {
         span.classList.remove("highlight")
       );
     }
-    recognitionRef.current.start();
-    setIsRecognitionActive(true);
 
-    recognitionTimeoutRef.current = setTimeout(() => {
-      recognitionRef.current.stop();
-      recognitionRef.current.start(); // Restart recognition every 5 seconds
-    }, 5000);
+    try {
+      recognitionRef.current.start();
+      setIsRecognitionActive(true);
+
+      recognitionTimeoutRef.current = setTimeout(() => {
+        restartRecognition();
+      }, 5000);
+    } catch (error) {
+      console.error("Error starting recognition:", error);
+      setIsRecognitionActive(false);
+    }
   };
 
   const stopRecognition = () => {
-    recognitionRef.current.stop();
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
     clearTimeout(recognitionTimeoutRef.current);
     setIsRecognitionActive(false);
+  };
+
+  const restartRecognition = () => {
+    stopRecognition();
+    setTimeout(() => {
+      startRecognition();
+    }, 100);
   };
 
   return (
