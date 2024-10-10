@@ -22,7 +22,7 @@ const RealTimeAutocue = () => {
       const speechRecognitionList = new SpeechGrammarList();
 
       const grammar = `#JSGF V1.0; grammar words; public <word> = ${words.join(
-        " | "
+        " | ",
       )};`;
       speechRecognitionList.addFromString(grammar, 1);
 
@@ -76,7 +76,7 @@ const RealTimeAutocue = () => {
           matrix[i][j] = Math.min(
             matrix[i - 1][j - 1] + 1,
             matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
+            matrix[i - 1][j] + 1,
           );
         }
       }
@@ -88,7 +88,7 @@ const RealTimeAutocue = () => {
   const areSimilar = (word1, word2, threshold = 0.7) => {
     const distance = levenshteinDistance(
       word1.toLowerCase(),
-      word2.toLowerCase()
+      word2.toLowerCase(),
     );
     const maxLength = Math.max(word1.length, word2.length);
     const similarity = 1 - distance / maxLength;
@@ -150,7 +150,7 @@ const RealTimeAutocue = () => {
     setCurrentWordIndex(0);
     if (textContainerRef.current) {
       Array.from(textContainerRef.current.children).forEach((span) =>
-        span.classList.remove("highlight")
+        span.classList.remove("highlight"),
       );
     }
     recognitionRef.current.start();
@@ -171,13 +171,22 @@ const RealTimeAutocue = () => {
   return (
     <div>
       <h1>Real-time Autocue</h1>
-      <button onClick={startRecognition} disabled={isRecognitionActive}>
+      <button
+        onClick={startRecognition}
+        disabled={isRecognitionActive}
+      >
         Start
       </button>
-      <button onClick={stopRecognition} disabled={!isRecognitionActive}>
+      <button
+        onClick={stopRecognition}
+        disabled={!isRecognitionActive}
+      >
         Stop
       </button>
-      <div ref={textContainerRef} className="text-4xl">
+      <div
+        ref={textContainerRef}
+        className="text-4xl"
+      >
         {words.map((word, index) => (
           <span key={index}>{word} </span>
         ))}
