@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useStore } from "@nanostores/react";
 import { messageStore } from "../store.js";
+import Icon from "./Icon.jsx";
 
 const RealTimeAutocue = () => {
   const sentence = useStore(messageStore);
@@ -35,6 +36,9 @@ const RealTimeAutocue = () => {
       recognitionRef.current = recognition;
 
       setupRecognitionEventListeners();
+
+      // Start recognition automatically
+      startRecognition();
     }
 
     return () => {
@@ -44,6 +48,17 @@ const RealTimeAutocue = () => {
       clearTimeout(recognitionTimeoutRef.current);
     };
   }, []);
+
+  // New useEffect to check for last word highlight
+  useEffect(() => {
+    if (currentWordIndex >= words.length - 1) {
+      highlightWord(words.length - 1);
+      setTimeout(() => {
+        recognitionRef.current.stop();
+        setIsRecognitionActive(false);
+      }, 500);
+    }
+  }, [currentWordIndex, words.length]);
 
   const setupRecognitionEventListeners = () => {
     const recognition = recognitionRef.current;
@@ -133,9 +148,14 @@ const RealTimeAutocue = () => {
       if (matchFound) break;
     }
 
-    if (currentWordIndex >= words.length) {
-      recognitionRef.current.stop();
-      setIsRecognitionActive(false);
+    // If we're at the last word, be more lenient
+    if (currentWordIndex === words.length - 1) {
+      const lastRecognizedWord = recognizedWords[recognizedWords.length - 1];
+      const lastExpectedWord = words[words.length - 1].toLowerCase();
+      if (areSimilar(lastRecognizedWord, lastExpectedWord, 0.5)) {
+        highlightWord(words.length - 1);
+        setCurrentWordIndex(words.length);
+      }
     }
   };
 
@@ -169,27 +189,31 @@ const RealTimeAutocue = () => {
   };
 
   return (
-    <div>
-      <h1>Real-time Autocue</h1>
-      <button
-        onClick={startRecognition}
-        disabled={isRecognitionActive}
-      >
-        Start
-      </button>
-      <button
-        onClick={stopRecognition}
-        disabled={!isRecognitionActive}
-      >
-        Stop
-      </button>
-      <div
-        ref={textContainerRef}
-        className="text-4xl"
-      >
-        {words.map((word, index) => (
-          <span key={index}>{word} </span>
-        ))}
+    <div className="flex flex-col h-full">
+      <div className="flex-grow overflow-auto p-4 flex items-center justify-center h-full">
+        <div
+          ref={textContainerRef}
+          className="w-full max-w-4xl text-white text-5xl"
+          style={{ lineHeight: "3.74rem" }}
+        >
+          {words.map((word, index) => (
+            <span key={index}>{word} </span>
+          ))}
+        </div>
+      </div>
+      <div className="p-4 text-center">
+        <button
+          onClick={stopRecognition}
+          disabled={!isRecognitionActive}
+          className="appearance-none inline-block bg-blue-500 rounded-full w-14 h-14 pt-1 mb-6"
+        >
+          <Icon
+            src="../icons/mic.svg"
+            width={38}
+            height={50}
+          />
+        </button>
+        <p>Stop</p>
       </div>
     </div>
   );
