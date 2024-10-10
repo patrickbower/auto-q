@@ -1,12 +1,24 @@
 {
+  "singleAttributePerLine": true,
+  "jsxSingleQuote": false,
+  "bracketSameLine": false,
+  "printWidth": 80,
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "semi": true,
   "plugins": ["prettier-plugin-astro"],
   "overrides": [
     {
-      "files": ["*.astro", "*.jsx", "*.js", "*.tsx", "*.ts"],
+      "files": "*.astro",
       "options": {
-        "singleAttributePerLine": true
+        "parser": "astro"
+      }
+    },
+    {
+      "files": ["*.jsx", "*.js"],
+      "options": {
+        "parser": "babel"
       }
     }
-  ],
-  "singleAttributePerLine": true
+  ]
 }

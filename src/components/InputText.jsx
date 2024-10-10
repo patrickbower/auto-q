@@ -16,7 +16,7 @@ const AddText = (message) => {
   }, []);
 
   const [text, setText] = useState(
-    "For a moment, nothing happened. Then, after a second or so, nothing continued to happen.",
+    "For a moment, nothing happened. Then, after a second or so, nothing continued to happen."
   );
 
   const handleTextChange = (e) => {
@@ -30,18 +30,20 @@ const AddText = (message) => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-grow overflow-auto p-4 flex items-center justify-center h-full">
-        <textarea
-          ref={textareaRef}
-          autoFocus
-          required
-          id="text"
-          rows="3"
-          value={text}
-          placeholder="Enter your text"
-          onChange={handleTextChange}
-          className="appearance-none w-full max-w-4xl text-white bg-transparent text-5xl resize-none focus:outline-none placeholder-gray-500 caret-red-500"
-          style={{ lineHeight: "3.74rem" }}
-        />
+        <div className="w-full max-w-4xl p-16 rounded-lg">
+          <textarea
+            ref={textareaRef}
+            autoFocus
+            required
+            id="text"
+            rows="3"
+            value={text}
+            placeholder="Enter your text"
+            onChange={handleTextChange}
+            className="appearance-none w-full max-w-4xl text-white bg-transparent text-5xl resize-none focus:outline-none placeholder-gray-500 caret-red-500"
+            style={{ lineHeight: "3.74rem" }}
+          />
+        </div>
       </div>
       <div className="p-4 text-center">
         <button

@@ -20,7 +20,27 @@ import TextContainer from "../components/TextContainer.jsx";
   </main>
 </Layout>
 
-<style>
+<style is:global>
+  html {
+    /* neutral-600 */
+    background: #525252;
+    color: white;
+    font-family: "SUSE", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 200;
+    font-style: normal;
+    font-size: 20px;
+  }
+
+  .speech-text span {
+    color: white;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .speech-text span.highlight {
+    color: #525252;
+  }
+
   h1:after {
     content: "";
     position: absolute;
@@ -29,5 +49,19 @@ import TextContainer from "../components/TextContainer.jsx";
     width: 40px;
     height: 3px;
     background-color: #ef4444;
+  }
+
+  .speech-bubble:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 65px solid transparent;
+    border-top-color: #404040;
+    border-bottom: 0;
+    margin-left: -65px;
+    margin-bottom: -65px;
   }
 </style>

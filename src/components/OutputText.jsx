@@ -23,7 +23,7 @@ const RealTimeAutocue = () => {
       const speechRecognitionList = new SpeechGrammarList();
 
       const grammar = `#JSGF V1.0; grammar words; public <word> = ${words.join(
-        " | ",
+        " | "
       )};`;
       speechRecognitionList.addFromString(grammar, 1);
 
@@ -91,7 +91,7 @@ const RealTimeAutocue = () => {
           matrix[i][j] = Math.min(
             matrix[i - 1][j - 1] + 1,
             matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1,
+            matrix[i - 1][j] + 1
           );
         }
       }
@@ -103,7 +103,7 @@ const RealTimeAutocue = () => {
   const areSimilar = (word1, word2, threshold = 0.7) => {
     const distance = levenshteinDistance(
       word1.toLowerCase(),
-      word2.toLowerCase(),
+      word2.toLowerCase()
     );
     const maxLength = Math.max(word1.length, word2.length);
     const similarity = 1 - distance / maxLength;
@@ -163,14 +163,14 @@ const RealTimeAutocue = () => {
     console.log("Sound ended");
     const recognition = recognitionRef.current;
     recognition.stop();
-    recognition.start(); // Restart to continue listening
+    // recognition.start(); // Restart to continue listening
   };
 
   const startRecognition = () => {
     setCurrentWordIndex(0);
     if (textContainerRef.current) {
       Array.from(textContainerRef.current.children).forEach((span) =>
-        span.classList.remove("highlight"),
+        span.classList.remove("highlight")
       );
     }
     recognitionRef.current.start();
@@ -191,14 +191,16 @@ const RealTimeAutocue = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-grow overflow-auto p-4 flex items-center justify-center h-full">
-        <div
-          ref={textContainerRef}
-          className="w-full max-w-4xl text-white text-5xl"
-          style={{ lineHeight: "3.74rem" }}
-        >
-          {words.map((word, index) => (
-            <span key={index}>{word} </span>
-          ))}
+        <div className="bg-neutral-700 w-full max-w-4xl p-16 rounded-lg speech-bubble relative -mt-1">
+          <div
+            ref={textContainerRef}
+            className="text-5xl speech-text"
+            style={{ lineHeight: "3.74rem" }}
+          >
+            {words.map((word, index) => (
+              <span key={index}>{word} </span>
+            ))}
+          </div>
         </div>
       </div>
       <div className="p-4 text-center">
