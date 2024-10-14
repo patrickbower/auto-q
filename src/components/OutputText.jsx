@@ -253,11 +253,10 @@ const RealTimeAutocue = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-grow overflow-auto p-4 flex items-center justify-center h-full">
-        <div className="bg-neutral-700 w-full max-w-4xl p-16 rounded-lg speech-bubble relative -mt-1">
+        <div className="bg-neutral-700 w-full max-w-4xl p-4 md:p-16 rounded-lg speech-bubble relative -mt-1">
           <div
             ref={textContainerRef}
-            className="text-5xl speech-text"
-            style={{ lineHeight: "3.74rem" }}
+            className="text-2xl md:text-5xl md:leading-extra-loose speech-text"
           >
             {words.map((word, index) => (
               <span key={index}>{word} </span>
