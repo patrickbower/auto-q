@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import TextContainer from "../components/TextContainer.jsx";
 import Info from "../components/Info.jsx";
+import Warning from "../components/Warning.astro";
 ---
 
 <Layout title="AutoQ">
@@ -15,8 +16,11 @@ import Info from "../components/Info.jsx";
           AutoQ
         </h1>
       </div>
-      <div class="overflow-auto">
+      <div class="overflow-auto hidden md:block">
         <TextContainer client:load />
+      </div>
+      <div class="overflow-auto lock md:hidden">
+        <Warning />
       </div>
     </div>
   </main>
