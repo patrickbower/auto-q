@@ -5,8 +5,8 @@ const Info = () => {
 
   const InfoBox = function () {
     return (
-      <div className="w-80 bg-white rounded-lg p-4 mt-4 shadow-xl">
-        <p className="text-neutral-600 font-semibold">
+      <div className="w-96 bg-white rounded-lg p-4 mt-4 shadow-xl relative z-50">
+        <p className="text-neutral-600 font-semibold pb-4">
           A side project exploring the Web Speech API and its ability to aid
           public speaking through auto-cue web app.
         </p>
