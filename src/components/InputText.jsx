@@ -16,7 +16,7 @@ const AddText = (message) => {
   }, []);
 
   const [text, setText] = useState(
-    "For a moment, nothing happened. Then, after a second or so, nothing continued to happen."
+    "The answer to the great question of life, the universe and everything is 42, it said with infinite majesty and calm."
   );
 
   const handleTextChange = (e) => {
@@ -42,6 +42,7 @@ const AddText = (message) => {
             onChange={handleTextChange}
             className="appearance-none w-full max-w-4xl text-white bg-transparent text-5xl resize-none focus:outline-none placeholder-gray-500 caret-red-500"
             style={{ lineHeight: "3.74rem" }}
+            maxLength="150"
           />
         </div>
       </div>
