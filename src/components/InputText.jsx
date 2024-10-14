@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { messageStore } from "../store.js";
 import Icon from "./Icon.jsx";
+import autosize from "autosize";
 
 const AddText = (message) => {
   const textareaRef = useRef(null);
@@ -13,6 +14,10 @@ const AddText = (message) => {
       const length = textarea.value.length;
       textarea.setSelectionRange(length, length);
     }
+
+    var ta = document.querySelector("textarea");
+    // ta.style.display = "none";
+    autosize(ta);
   }, []);
 
   const [text, setText] = useState(
@@ -30,7 +35,7 @@ const AddText = (message) => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-grow overflow-auto p-4 flex items-center justify-center h-full">
-        <div className="w-full max-w-4xl p-16 rounded-lg">
+        <div className="w-full max-w-4xl p-4 md:p-16 rounded-lg">
           <textarea
             ref={textareaRef}
             autoFocus
@@ -40,9 +45,8 @@ const AddText = (message) => {
             value={text}
             placeholder="Enter your text"
             onChange={handleTextChange}
-            className="appearance-none w-full max-w-4xl text-white bg-transparent text-5xl resize-none focus:outline-none placeholder-gray-500 caret-red-500"
-            style={{ lineHeight: "3.74rem" }}
-            maxLength="150"
+            className="appearance-none w-full max-w-4xl text-white bg-transparent text-2xl md:text-5xl resize-none focus:outline-none placeholder-gray-500 caret-red-500 md:leading-extra-loose"
+            maxLength="300"
           />
         </div>
       </div>
