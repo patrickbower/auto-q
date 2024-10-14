@@ -16,7 +16,6 @@ const AddText = (message) => {
     }
 
     var ta = document.querySelector("textarea");
-    // ta.style.display = "none";
     autosize(ta);
   }, []);
 
