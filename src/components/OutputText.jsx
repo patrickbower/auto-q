@@ -1,58 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useStore } from "@nanostores/react";
 import { messageStore } from "../store.js";
+import Icon from "./Icon.jsx";
 
 const RealTimeAutocue = () => {
   const sentence = useStore(messageStore);
   const words = sentence.split(" ");
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isRecognitionActive, setIsRecognitionActive] = useState(false);
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
+  const [isFinshed, setIsFinshed] = useState(false);
   const textContainerRef = useRef(null);
   const recognitionRef = useRef(null);
   const recognitionTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    const SpeechGrammarList =
-      window.SpeechGrammarList || window.webkitSpeechGrammarList;
-
-    if (SpeechRecognition && SpeechGrammarList) {
-      const recognition = new SpeechRecognition();
-      const speechRecognitionList = new SpeechGrammarList();
-
-      const grammar = `#JSGF V1.0; grammar words; public <word> = ${words.join(
-        " | "
-      )};`;
-      speechRecognitionList.addFromString(grammar, 1);
-
-      recognition.grammars = speechRecognitionList;
-      recognition.lang = "en-US";
-      recognition.interimResults = true;
-      recognition.continuous = true;
-      recognition.maxAlternatives = 5;
-
-      recognitionRef.current = recognition;
-
-      setupRecognitionEventListeners();
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      clearTimeout(recognitionTimeoutRef.current);
-    };
-  }, []);
-
-  const setupRecognitionEventListeners = () => {
-    const recognition = recognitionRef.current;
-
-    recognition.onresult = handleRecognitionResult;
-    recognition.onsoundstart = () => console.log("Sound started");
-    recognition.onsoundend = handleSoundEnd;
-    recognition.onend = () => console.log("Recognition ended");
-  };
 
   const levenshteinDistance = (a, b) => {
     if (a.length === 0) return b.length;
@@ -95,6 +55,94 @@ const RealTimeAutocue = () => {
     return similarity >= threshold;
   };
 
+  const cleanupRecognition = useCallback(() => {
+    setIsCleaningUp(true);
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (error) {
+        console.error("Error aborting recognition:", error);
+      }
+      recognitionRef.current.onresult = null;
+      recognitionRef.current.onsoundstart = null;
+      recognitionRef.current.onsoundend = null;
+      recognitionRef.current.onend = null;
+      recognitionRef.current.onerror = null;
+      recognitionRef.current = null;
+    }
+    clearTimeout(recognitionTimeoutRef.current);
+    setIsRecognitionActive(false);
+    setCurrentWordIndex(0);
+    setIsCleaningUp(false);
+  }, []);
+
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechGrammarList =
+      window.SpeechGrammarList || window.webkitSpeechGrammarList;
+
+    if (SpeechRecognition && SpeechGrammarList) {
+      const recognition = new SpeechRecognition();
+      const speechRecognitionList = new SpeechGrammarList();
+
+      const grammar = `#JSGF V1.0; grammar words; public <word> = ${words.join(
+        " | "
+      )};`;
+      speechRecognitionList.addFromString(grammar, 1);
+
+      recognition.grammars = speechRecognitionList;
+      recognition.lang = "en-US";
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 5;
+
+      recognitionRef.current = recognition;
+
+      setupRecognitionEventListeners();
+
+      startRecognition();
+    }
+
+    return cleanupRecognition;
+  }, [cleanupRecognition]);
+
+  useEffect(() => {
+    if (currentWordIndex >= words.length - 1) {
+      highlightWord(words.length - 1);
+      setTimeout(() => {
+        stopRecognition();
+      }, 500);
+    }
+  }, [currentWordIndex, words.length]);
+
+  const setupRecognitionEventListeners = () => {
+    const recognition = recognitionRef.current;
+
+    recognition.onresult = handleRecognitionResult;
+    recognition.onsoundstart = () => console.log("Sound started");
+    recognition.onsoundend = handleSoundEnd;
+    recognition.onend = handleRecognitionEnd;
+    recognition.onerror = (event) => {
+      if (event.error === "aborted" && isCleaningUp) {
+        console.log("Recognition aborted during cleanup");
+      } else {
+        // console.error("Recognition error:", event.error);
+        if (event.error === "not-allowed") {
+          cleanupRecognition();
+        }
+      }
+    };
+  };
+
+  const handleRecognitionEnd = () => {
+    console.log("Recognition ended");
+    if (!isCleaningUp) {
+      cleanupRecognition();
+    }
+    setIsFinshed(true);
+  };
+
   const highlightWord = (index) => {
     if (index < words.length && textContainerRef.current) {
       textContainerRef.current.children[index].classList.add("highlight");
@@ -102,11 +150,13 @@ const RealTimeAutocue = () => {
   };
 
   const handleRecognitionResult = (event) => {
+    if (!recognitionRef.current || isCleaningUp) return;
+
     clearTimeout(recognitionTimeoutRef.current);
     const result = event.results[event.results.length - 1];
     const transcript = result[0].transcript.trim().toLowerCase();
 
-    console.log("Transcript:", transcript); // For debugging
+    console.log("Transcript:", transcript);
 
     const recognizedWords = transcript.split(" ");
     let matchFound = false;
@@ -121,7 +171,6 @@ const RealTimeAutocue = () => {
           expectedWord.includes(recognizedWord) ||
           recognizedWord.includes(expectedWord)
         ) {
-          // Highlight all words up to and including the matched word
           for (let k = currentWordIndex; k <= j; k++) {
             highlightWord(k);
           }
@@ -133,54 +182,122 @@ const RealTimeAutocue = () => {
       if (matchFound) break;
     }
 
-    if (currentWordIndex >= words.length) {
-      recognitionRef.current.stop();
-      setIsRecognitionActive(false);
+    if (currentWordIndex === words.length - 1) {
+      const lastRecognizedWord = recognizedWords[recognizedWords.length - 1];
+      const lastExpectedWord = words[words.length - 1].toLowerCase();
+      if (areSimilar(lastRecognizedWord, lastExpectedWord, 0.5)) {
+        highlightWord(words.length - 1);
+        setCurrentWordIndex(words.length);
+      }
     }
   };
 
   const handleSoundEnd = () => {
     console.log("Sound ended");
-    const recognition = recognitionRef.current;
-    recognition.stop();
-    recognition.start(); // Restart to continue listening
+    if (!isCleaningUp) {
+      stopRecognition();
+    }
   };
 
   const startRecognition = () => {
+    if (isCleaningUp) return;
+
     setCurrentWordIndex(0);
     if (textContainerRef.current) {
       Array.from(textContainerRef.current.children).forEach((span) =>
         span.classList.remove("highlight")
       );
     }
-    recognitionRef.current.start();
-    setIsRecognitionActive(true);
 
-    recognitionTimeoutRef.current = setTimeout(() => {
-      recognitionRef.current.stop();
-      recognitionRef.current.start(); // Restart recognition every 5 seconds
-    }, 5000);
+    try {
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+        setIsRecognitionActive(true);
+
+        recognitionTimeoutRef.current = setTimeout(() => {
+          restartRecognition();
+        }, 5000);
+      }
+    } catch (error) {
+      console.error("Error starting recognition:", error);
+      setIsRecognitionActive(false);
+      if (error.name === "NotAllowedError") {
+        cleanupRecognition();
+      }
+    }
   };
 
   const stopRecognition = () => {
-    recognitionRef.current.stop();
+    if (isCleaningUp) return;
+
+    try {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    } catch (error) {
+      console.error("Error stopping recognition:", error);
+    }
     clearTimeout(recognitionTimeoutRef.current);
     setIsRecognitionActive(false);
   };
 
+  const restartRecognition = () => {
+    if (isCleaningUp) return;
+
+    stopRecognition();
+    setTimeout(() => {
+      startRecognition();
+    }, 100);
+  };
+
   return (
-    <div>
-      <h1>Real-time Autocue</h1>
-      <button onClick={startRecognition} disabled={isRecognitionActive}>
-        Start
-      </button>
-      <button onClick={stopRecognition} disabled={!isRecognitionActive}>
-        Stop
-      </button>
-      <div ref={textContainerRef} className="text-4xl">
-        {words.map((word, index) => (
-          <span key={index}>{word} </span>
-        ))}
+    <div className="flex flex-col h-full">
+      <div className="flex-grow overflow-auto p-4 flex items-center justify-center h-full">
+        <div className="bg-neutral-700 w-full max-w-4xl p-16 rounded-lg speech-bubble relative -mt-1">
+          <div
+            ref={textContainerRef}
+            className="text-5xl speech-text"
+            style={{ lineHeight: "3.74rem" }}
+          >
+            {words.map((word, index) => (
+              <span key={index}>{word} </span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="p-4 flex items-center flex-col">
+        {isFinshed ? (
+          <>
+            <button
+              onClick={() => {
+                window.location.href = "/";
+              }}
+              className="appearance-none bg-green rounded-full w-14 h-14 mb-6 flex items-center justify-center"
+            >
+              <Icon
+                src="../icons/check.svg"
+                width={70}
+                height={70}
+              />
+            </button>
+            <p className="text-green-600">Done</p>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={stopRecognition}
+              disabled={!isRecognitionActive}
+              className="appearance-none bg-white rounded-full w-14 h-14 mb-6 flex items-center justify-center"
+            >
+              <Icon
+                src="../icons/stop.svg"
+                width={30}
+                height={30}
+              />
+            </button>
+            <p>Stop</p>
+          </>
+        )}
       </div>
     </div>
   );
