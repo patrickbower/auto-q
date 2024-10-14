@@ -5,12 +5,21 @@ const Info = () => {
 
   const InfoBox = function () {
     return (
-      <div className="w-80 bg-white rounded-lg p-4 mt-4 shadow-xl">
-        <p className="text-neutral-600 font-semibold">
+      <div className="w-96 bg-white rounded-lg p-4 mt-4 shadow-xl">
+        <p className="text-neutral-600 font-semibold pb-4">
           A side project exploring the Web Speech API and its ability to aid
           public speaking through auto-cue web app.
         </p>
-        <div className="my-4 w-80 h-0.5 bg-neutral-600 relative -left-4"></div>
+        <p className="text-neutral-600 font-semibold pb-4">
+          This demo is deliberately lenient to imitate real-world needs and uses
+          the following features:
+        </p>
+        <ul className="text-neutral-600 font-semibold list-disc list-inside">
+          <li>Web Speech API - Native to web browsers</li>
+          <li>Grammar List - speeding up recognition</li>
+          <li>Word skipping - ability to move past a word</li>
+        </ul>
+        <div className="my-4 w-96 h-0.5 bg-neutral-600 relative -left-4"></div>
         <a
           href="https://www.patrickbower.com/"
           className="text-neutral-400 hover:text-neutral-600"
